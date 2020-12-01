@@ -101,18 +101,21 @@ def append_tokens(tokens, doc_id, inverted_indices):
 # %%
 if __name__ == "__main__":
     # run only once to generate map file between doc id and doc path
-    dataset_path = "../dataset/"
-    id_path_map = "../output/id_path_map.txt"
+    dataset_path = os.path.join("..", "dataset", "")
+    id_path_map = os.path.join("..", "output", "id_path_map.txt")
     # gen_id_path_map(dataset_path, id_path_map)
 
-    id_path_map = "../output/id_path_map_part.txt"
+    max_iters = 1000
     inverted_indices = {}
     cost_time = [0, 0, 0, 0, 0, 0]
     temp_time = [0, 0, 0, 0, 0, 0]
     with open(id_path_map, "r") as f_id_path_map:
+        iter = 0
         while True:
+            print(iter)
+            iter += 1
             line = f_id_path_map.readline().strip("\n")
-            if not line:
+            if not line or iter > max_iters:
                 break
             doc_id, doc_path = line.split(" ")
             doc_id = int(doc_id)
