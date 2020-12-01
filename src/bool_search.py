@@ -22,6 +22,21 @@ stemmer = snowball_stemmer
 
 
 # %%
+def gen_id_path_map(dataset_path, id_path_map):
+    with open(id_path_map, "w+") as f_id_path_map:
+        num_files = 0
+        for root, dirs, files in os.walk(dataset_path, topdown=False):
+            for f in files:
+                f_id_path_map.write(
+                    str(num_files)
+                    + " "
+                    + os.path.join(root.replace(dataset_path, ""), f)
+                    + "\n"
+                )
+                num_files += 1
+    return num_files
+
+
 def doc2str(doc_fp):
     try:
         mail = email.parser.Parser().parse(doc_fp)
@@ -81,22 +96,6 @@ def append_tokens(tokens, doc_id, inverted_indices):
                 inverted_indices[token].append(doc_id)
         else:
             inverted_indices[token] = [doc_id]
-
-
-# %%
-def gen_id_path_map(dataset_path, id_path_map):
-    with open(id_path_map, "w+") as f_id_path_map:
-        num_files = 0
-        for root, dirs, files in os.walk(dataset_path, topdown=False):
-            for f in files:
-                f_id_path_map.write(
-                    str(num_files)
-                    + " "
-                    + os.path.join(root.replace(dataset_path, ""), f)
-                    + "\n"
-                )
-                num_files += 1
-    return num_files
 
 
 # %%
