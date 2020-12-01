@@ -7,6 +7,7 @@ from nltk.corpus import wordnet
 import email
 import time
 import string
+import multiprocessing
 from multiprocessing import Pool
 
 
@@ -65,17 +66,9 @@ def lem(tokens):
     return stem_tokens
 
 
-def stem_single(token):
+def stem(token):
     token = token.lower()
     return stemmer.stem(token)
-
-
-def stem(tokens):
-    stem_tokens = []
-    for token in tokens:
-        token = token.lower()
-        stem_tokens.append(stemmer.stem(token))
-    return stem_tokens
 
 
 def del_duplicates(tokens):
@@ -84,9 +77,8 @@ def del_duplicates(tokens):
     return tokens
 
 
-def del_stops(tokens):
-    filtered_tokens = [token for token in tokens if token not in stopwords]
-    return filtered_tokens
+def del_stop(token):
+    return token not in stopwords
 
 
 def append_tokens(tokens, doc_id, inverted_indices):
@@ -105,6 +97,7 @@ if __name__ == "__main__":
     id_path_map = os.path.join("..", "output", "id_path_map.txt")
     # gen_id_path_map(dataset_path, id_path_map)
 
+    cores = multiprocessing.cpu_count()
     max_iters = 1000
     inverted_indices = {}
     cost_time = [0, 0, 0, 0, 0, 0]
@@ -126,16 +119,14 @@ if __name__ == "__main__":
                 temp_time[1] = time.time()
                 tokens = tokenize(doc_str)
                 temp_time[2] = time.time()
-                # tokens = stem(tokens)
-                with Pool(4) as p:
-                    tokens = p.map(stem_single, tokens)
+                tokens = map(stem, tokens)
                 temp_time[3] = time.time()
-                tokens = del_stops(tokens)
+                tokens = filter(del_stop, tokens)
                 temp_time[4] = time.time()
                 # add tokens of a certain doc into inverted index table
                 append_tokens(tokens, doc_id, inverted_indices)
                 temp_time[5] = time.time()
                 for i in range(5):
                     cost_time[i] += temp_time[i + 1] - temp_time[i]
-                cost_time[5] = sum(cost_time[:-2])
+                cost_time[5] = sum(cost_time[:-1])
     print(cost_time)
