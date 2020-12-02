@@ -4,10 +4,10 @@ from nltk.corpus import wordnet
 import email
 import time
 import string
-import yaml
+import json
 
-
-punct_tran_table = str.maketrans(string.punctuation, " " * len(string.punctuation))
+del_letters = string.punctuation + string.digits
+del_tran_table = str.maketrans(del_letters, " " * len(del_letters))
 stopwords = set(nltk.corpus.stopwords.words("english"))
 pos_tran = {"N": wordnet.NOUN, "V": wordnet.VERB, "J": wordnet.ADJ, "R": wordnet.ADV}
 
@@ -18,23 +18,20 @@ snowball_stemmer = nltk.stem.SnowballStemmer("english")
 stemmer = snowball_stemmer
 
 # get top 1000 tf tokens
-with open(os.path.join("..","output","total_tf_1000.yaml")) as fp:
-    total_tf_1000 = yaml.load(fp)
-target_tokens = set(map(lambda x: x[0],total_tf_1000))
+with open(os.path.join("..", "output", "total_tf_1000.json")) as fp:
+    total_tf_1000 = json.load(fp)
+target_tokens = set(map(lambda x: x[0], total_tf_1000))
 
 
 def gen_id_path_map(dataset_path, id_path_map):
-    with open(id_path_map, "w+") as f_id_path_map:
-        num_files = 0
-        for root, dirs, files in os.walk(dataset_path, topdown=False):
-            for f in files:
-                f_id_path_map.write(
-                    str(num_files)
-                    + " "
-                    + os.path.join(root.replace(dataset_path, ""), f)
-                    + "\n"
-                )
-                num_files += 1
+    id_path_dict = {}
+    num_files = 0
+    for root, dirs, files in os.walk(dataset_path, topdown=False):
+        for f in files:
+            id_path_dict[num_files] = os.path.join(root.replace(dataset_path, ""), f)
+            num_files += 1
+    with open(id_path_map, "w+") as fp:
+        json.dump(id_path_dict, fp)
     return num_files
 
 
@@ -49,7 +46,7 @@ def doc2str(doc_fp):
 
 
 def tokenize(doc_str):
-    doc_str = doc_str.translate(punct_tran_table)
+    doc_str = doc_str.translate(del_tran_table)
     tokens = nltk.tokenize.word_tokenize(doc_str)
     return tokens
 
@@ -76,8 +73,10 @@ def del_duplicates(tokens):
     tokens = list(set(tokens))
     return tokens
 
+
 def token_filter(token):
     return token in target_tokens
+
 
 def del_stop(token):
     return token not in stopwords
@@ -90,17 +89,11 @@ def append_tokens(tokens, doc_id, inverted_indices):
                 inverted_indices[token].append(doc_id)
         else:
             inverted_indices[token] = [doc_id]
-            
-            
-def bool_parse():
-    pass
-            
-            
+
+
 # run only once to generate map file between doc id and doc path
 dataset_path = os.path.join("..", "dataset", "")
-id_path_map = os.path.join("..", "output", "id_path_map.txt")
-
-# gen_id_path_map(dataset_path, id_path_map)
+id_path_map = os.path.join("..", "output", "id_path_map.json")
 
 max_iters = 1000000
 inverted_indices = {}
@@ -137,4 +130,4 @@ with open(id_path_map, "r") as f_id_path_map:
 
 for key, value in inverted_indices.items():
     with open("../output/inverted_index_table/" + key, "w+") as fp:
-        yaml.dump(value,fp)
+        json.dump(value, fp)
