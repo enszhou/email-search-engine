@@ -18,21 +18,9 @@ snowball_stemmer = nltk.stem.SnowballStemmer("english")
 stemmer = snowball_stemmer
 
 # get top 1000 tf tokens
-with open(os.path.join("..", "output", "total_tf_1000.json")) as fp:
+with open(os.path.join("..", "output", "ttf_1000.json")) as fp:
     total_tf_1000 = json.load(fp)
 target_tokens = set(map(lambda x: x[0], total_tf_1000))
-
-
-def gen_id_path_map(dataset_path, id_path_map):
-    id_path_dict = {}
-    num_files = 0
-    for root, dirs, files in os.walk(dataset_path, topdown=False):
-        for f in files:
-            id_path_dict[num_files] = os.path.join(root.replace(dataset_path, ""), f)
-            num_files += 1
-    with open(id_path_map, "w+") as fp:
-        json.dump(id_path_dict, fp)
-    return num_files
 
 
 def doc2str(doc_fp):
@@ -95,39 +83,44 @@ def append_tokens(tokens, doc_id, inverted_indices):
 dataset_path = os.path.join("..", "dataset", "")
 id_path_map = os.path.join("..", "output", "id_path_map.json")
 
-max_iters = 1000000
+with open(id_path_map) as fp:
+    id_path_dict = json.load(fp)
+
+max_iters = 10000
 inverted_indices = {}
 cost_time = [0, 0, 0, 0, 0, 0]
 temp_time = [0, 0, 0, 0, 0, 0]
-with open(id_path_map, "r") as f_id_path_map:
-    iter = 0
-    while True:
-        if iter % 1000 == 0:
-            print(iter)
-        iter += 1
-        line = f_id_path_map.readline().strip("\n")
-        if not line or iter > max_iters:
-            break
-        doc_id, doc_path = line.split(" ")
-        doc_id = int(doc_id)
-        # read docs
-        with open(os.path.join("..", "dataset", doc_path), "r") as doc_fp:
-            temp_time[0] = time.time()
-            doc_str = doc2str(doc_fp)
-            temp_time[1] = time.time()
-            tokens = tokenize(doc_str)
-            temp_time[2] = time.time()
-            tokens = map(stem, tokens)
-            temp_time[3] = time.time()
-            tokens = filter(token_filter, tokens)
-            temp_time[4] = time.time()
-            # add tokens of a certain doc into inverted index table
-            append_tokens(tokens, doc_id, inverted_indices)
-            temp_time[5] = time.time()
-            for i in range(5):
-                cost_time[i] += temp_time[i + 1] - temp_time[i]
-            cost_time[5] = sum(cost_time[:-1])
+iter = 0
 
+for doc_id, doc_path in id_path_dict.items():
+    if iter % 1000 == 0:
+        print(iter)
+    iter += 1
+    if iter > max_iters:
+        break
+    doc_id = int(doc_id)
+    # read docs
+    with open(os.path.join("..", "dataset", doc_path)) as doc_fp:
+        temp_time[0] = time.time()
+        doc_str = doc2str(doc_fp)
+        temp_time[1] = time.time()
+        tokens = tokenize(doc_str)
+        temp_time[2] = time.time()
+        tokens = map(stem, tokens)
+        temp_time[3] = time.time()
+        tokens = filter(token_filter, tokens)
+        temp_time[4] = time.time()
+        # add tokens of a certain doc into inverted index table
+        append_tokens(tokens, doc_id, inverted_indices)
+        temp_time[5] = time.time()
+        for i in range(5):
+            cost_time[i] += temp_time[i + 1] - temp_time[i]
+        cost_time[5] = sum(cost_time[:-1])
+
+
+i = 0
 for key, value in inverted_indices.items():
+    i += 1
+    print(i, key)
     with open("../output/inverted_index_table/" + key, "w+") as fp:
         json.dump(value, fp)

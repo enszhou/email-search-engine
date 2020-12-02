@@ -6,6 +6,7 @@ import email
 import string
 from collections import Counter
 import json
+import time
 
 
 del_letters = string.punctuation + string.digits
@@ -55,6 +56,8 @@ max_iters = 10000
 all_tokens = []
 total_tf_table = {}
 iter = 0
+cost_time = [0, 0, 0, 0, 0, 0]
+temp_time = [0, 0, 0, 0, 0, 0]
 
 for doc_id, doc_path in id_path_dict.items():
     if iter % 1000 == 0:
@@ -65,12 +68,22 @@ for doc_id, doc_path in id_path_dict.items():
     doc_id = int(doc_id)
     # read docs
     with open(os.path.join("..", "dataset", doc_path)) as doc_fp:
+        temp_time[0] = time.time()
         doc_str = doc2str(doc_fp)
+        temp_time[1] = time.time()
         tokens = tokenize(doc_str)
+        temp_time[2] = time.time()
         tokens = map(stem, tokens)
+        temp_time[3] = time.time()
         tokens = filter(del_stop, tokens)
+        temp_time[4] = time.time()
         all_tokens.extend(tokens)
+        temp_time[5] = time.time()
+        for i in range(5):
+            cost_time[i] += temp_time[i + 1] - temp_time[i]
+        cost_time[5] = sum(cost_time[:-1])
 
+print(cost_time)
 
 total_tf_table = Counter(all_tokens)
 total_tf_table_1000 = total_tf_table.most_common(1000)
