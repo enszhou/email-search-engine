@@ -14,7 +14,7 @@ def wordvec(core_id, low_id, high_id):
     with open(os.path.join("..", "output", "df_1000.csv")) as fp:
         r = csv.reader(fp)
         target_tokens_df = dict((rows[0], int(rows[1])) for rows in r)
-        target_tokens_list = sorted(list(map(lambda x: x[0], target_tokens_df)))
+        target_tokens_list = sorted(list(target_tokens_df.keys()))
 
     for iter in range(low_id, high_id):
         if iter >= util.docs_num:
