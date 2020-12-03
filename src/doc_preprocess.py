@@ -4,6 +4,7 @@ from collections import Counter
 import csv
 import time
 import util
+from multiprocessing import Pool
 
 
 def write_tokens(path, tokens):
@@ -14,39 +15,39 @@ def write_tokens(path, tokens):
         w.writerows(token_cnt_ordered)
 
 
+def preprocess(core_id, low_id, high_id, id_path_dict):
+    print("Task%d starts..." % core_id)
+    for iter in range(low_id, high_id):
+        if iter % 1000 == 0:
+            print(iter)
+        doc_id = iter
+        doc_path = id_path_dict[doc_id]
+        with open(os.path.join("..", "dataset", doc_path)) as doc_fp:
+            doc_str = util.doc2str(doc_fp)
+            tokens = util.tokenize(doc_str)
+            tokens = map(util.stem, tokens)
+            tokens = filter(util.del_stop, tokens)
+            path = os.path.join("..", "output", "doc_tokens", "%d.csv" % doc_id)
+            write_tokens(path, tokens)
+    print("Task%d ends..." % core_id)
+
+
 if __name__ == "__main__":
 
     dataset_path = os.path.join("..", "dataset", "")
     id_path_map = os.path.join("..", "output", "id_path_map.csv")
     id_path_dict = util.gen_id_path_map(dataset_path, id_path_map)
 
-    all_tokens = []
-    total_tf_table = {}
-
-    cost_time = [0, 0, 0, 0, 0, 0]
-    temp_time = [0, 0, 0, 0, 0, 0]
-
-    for iter in range(util.low_id, util.high_id):
-        if iter % 1000 == 0:
-            print(iter)
-        doc_id = iter
-        doc_path = id_path_dict[doc_id]
-        # read docs
-        with open(os.path.join("..", "dataset", doc_path)) as doc_fp:
-            temp_time[0] = time.time()
-            doc_str = util.doc2str(doc_fp)
-            temp_time[1] = time.time()
-            tokens = util.tokenize(doc_str)
-            temp_time[2] = time.time()
-            tokens = map(util.stem, tokens)
-            temp_time[3] = time.time()
-            tokens = filter(util.del_stop, tokens)
-            temp_time[4] = time.time()
-            path = os.path.join("..", "output", "doc_tokens", "%d.csv" % doc_id)
-            write_tokens(path, tokens)
-            temp_time[5] = time.time()
-            for i in range(5):
-                cost_time[i] += temp_time[i + 1] - temp_time[i]
-            cost_time[5] = sum(cost_time[:-1])
-
-    print(cost_time)
+    cores = 8
+    core_payload = 12000
+    print("Start preprocessing")
+    start_time = time.time()
+    p = Pool(cores)
+    for i in range(cores):
+        p.apply_async(
+            preprocess, args=(i, i * core_payload, (i + 1) * core_payload, id_path_dict)
+        )
+    p.close()
+    p.join()
+    end_time = time.time()
+    print("Total time: %fs" % (end_time - start_time))
