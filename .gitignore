@@ -202,3 +202,4 @@ output/inverted_indices_table.zip
 src/test.ipynb
 output/doc_tokens
 output/id_path_map.csv
+output/doc_wordvec

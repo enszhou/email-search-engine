@@ -41,7 +41,7 @@ if __name__ == "__main__":
     id_path_dict = util.gen_id_path_map(dataset_path, id_path_map)
 
     cores = 8
-    core_payload = 12000
+    core_payload = int(util.docs_num / cores) + 1
     print("Start preprocessing")
     start_time = time.time()
     p = Pool(cores)
