@@ -1,4 +1,4 @@
-import yaml
+import json
 import os
 import nltk
 
@@ -23,7 +23,7 @@ def get_indices(word):
     path = os.path.join("..", "output", "inverted_index_table", token)
     if os.path.exists(path):
         with open(path) as fp:
-            l = yaml.load(fp)
+            l = json.load(fp)
             return set(l)
     else:
         return set()
@@ -33,7 +33,7 @@ operators_level = {"$": -1, ")": 0, "|": 1, "&": 2, "!": 3, "(": 4}
 operator_func = {"&": op_and, "|": op_or, "!": op_not}
 
 
-def cal_bool(origin_query_str):
+def bool_query(origin_query_str):
     query_str = (
         origin_query_str.lower()
         .replace("(", " ( ")
@@ -78,3 +78,9 @@ def cal_bool(origin_query_str):
             operand_stack.append(operand)
             i += 1
     return operand_stack.pop()
+
+
+while True:
+    query_str = input("bool search expression: ")
+    print("doc ids are: ", bool_query(query_str))
+

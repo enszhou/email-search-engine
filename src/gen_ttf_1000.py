@@ -5,9 +5,12 @@ from nltk.corpus import wordnet
 import email
 import string
 from collections import Counter
-import json
+import csv
 import time
+import gen_id_path_map
 
+id_path_map = os.path.join("..", "output", "id_path_map.csv")
+id_path_dict = gen_id_path_map.get_id_path_map(id_path_map)
 
 del_letters = string.punctuation + string.digits
 del_tran_table = str.maketrans(del_letters, " " * len(del_letters))
@@ -46,12 +49,6 @@ def del_stop(token):
     return token not in stopwords
 
 
-dataset_path = os.path.join("..", "dataset", "")
-id_path_map = os.path.join("..", "output", "id_path_map.json")
-
-with open(id_path_map) as fp:
-    id_path_dict = json.load(fp)
-
 max_iters = 10000
 all_tokens = []
 total_tf_table = {}
@@ -87,5 +84,6 @@ print(cost_time)
 
 total_tf_table = Counter(all_tokens)
 total_tf_table_1000 = total_tf_table.most_common(1000)
-with open("../output/ttf_1000.json", "w+") as fp:
-    json.dump(total_tf_table_1000, fp)
+with open("../output/ttf_1000.csv", "w+", newline="") as fp:
+    w = csv.writer(fp)
+    w.writerows(total_tf_table_1000)

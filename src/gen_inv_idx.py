@@ -4,7 +4,17 @@ from nltk.corpus import wordnet
 import email
 import time
 import string
-import json
+import csv
+import gen_id_path_map
+
+id_path_map = os.path.join("..", "output", "id_path_map.csv")
+id_path_dict = gen_id_path_map.get_id_path_map(id_path_map)
+
+# get top 1000 tf tokens
+with open(os.path.join("..", "output", "ttf_1000.csv")) as fp:
+    r = csv.reader(fp)
+    total_tf_1000 = list(r)
+target_tokens = set(map(lambda x: x[0], total_tf_1000))
 
 del_letters = string.punctuation + string.digits
 del_tran_table = str.maketrans(del_letters, " " * len(del_letters))
@@ -16,11 +26,6 @@ porter_stemmer = nltk.stem.porter.PorterStemmer()
 lancaster_stemmer = nltk.stem.lancaster.LancasterStemmer()
 snowball_stemmer = nltk.stem.SnowballStemmer("english")
 stemmer = snowball_stemmer
-
-# get top 1000 tf tokens
-with open(os.path.join("..", "output", "ttf_1000.json")) as fp:
-    total_tf_1000 = json.load(fp)
-target_tokens = set(map(lambda x: x[0], total_tf_1000))
 
 
 def doc2str(doc_fp):
@@ -79,13 +84,6 @@ def append_tokens(tokens, doc_id, inverted_indices):
             inverted_indices[token] = [doc_id]
 
 
-# run only once to generate map file between doc id and doc path
-dataset_path = os.path.join("..", "dataset", "")
-id_path_map = os.path.join("..", "output", "id_path_map.json")
-
-with open(id_path_map) as fp:
-    id_path_dict = json.load(fp)
-
 max_iters = 10000
 inverted_indices = {}
 cost_time = [0, 0, 0, 0, 0, 0]
@@ -122,5 +120,7 @@ i = 0
 for key, value in inverted_indices.items():
     i += 1
     print(i, key)
-    with open("../output/inverted_index_table/" + key, "w+") as fp:
-        json.dump(value, fp)
+    with open("../output/inverted_index_table/" + key + ".csv", "w+", newline="") as fp:
+        w = csv.writer(fp)
+        for j in value:
+            w.writerow((j, id_path_dict[str(j)]))
