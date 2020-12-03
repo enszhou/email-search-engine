@@ -200,3 +200,4 @@ resource/查询词表.docx
 output/id_path_map.txt
 output/inverted_indices_table.zip
 src/test.ipynb
+output/doc_tokens
