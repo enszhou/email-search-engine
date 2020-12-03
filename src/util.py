@@ -10,8 +10,10 @@ del_tran_table = str.maketrans(del_letters, " " * len(del_letters))
 stopwords = set(nltk.corpus.stopwords.words("english"))
 stemmer = nltk.stem.SnowballStemmer("english")
 
-max_iters = 10000
-universe_set = set(range(max_iters))
+docs_num = 517401
+low_id = 0
+high_id = docs_num
+universe_set = set(range(low_id, high_id))
 
 
 def gen_id_path_map(dataset_path, id_path_map):

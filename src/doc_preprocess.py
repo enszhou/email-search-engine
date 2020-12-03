@@ -26,14 +26,11 @@ if __name__ == "__main__":
     cost_time = [0, 0, 0, 0, 0, 0]
     temp_time = [0, 0, 0, 0, 0, 0]
 
-    iter = 0
-    for doc_id, doc_path in id_path_dict.items():
+    for iter in range(util.low_id, util.high_id):
         if iter % 1000 == 0:
             print(iter)
-        iter += 1
-        if iter > util.max_iters:
-            break
-        doc_id = int(doc_id)
+        doc_id = iter
+        doc_path = id_path_dict[doc_id]
         # read docs
         with open(os.path.join("..", "dataset", doc_path)) as doc_fp:
             temp_time[0] = time.time()
