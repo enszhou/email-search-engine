@@ -1,6 +1,10 @@
-import json
+import csv
 import os
 import nltk
+import gen_id_path_map
+
+id_path_map = os.path.join("..", "output", "id_path_map.csv")
+id_path_dict = gen_id_path_map.get_id_path_map(id_path_map)
 
 universe_set = set(range(517401))
 stemmer = nltk.stem.SnowballStemmer("english")
@@ -20,11 +24,11 @@ def op_not(op):
 
 def get_indices(word):
     token = stemmer.stem(word)
-    path = os.path.join("..", "output", "inverted_index_table", token)
+    path = os.path.join("..", "output", "inverted_index_table", token + ".csv")
     if os.path.exists(path):
         with open(path) as fp:
-            l = json.load(fp)
-            return set(l)
+            r = csv.reader(fp)
+            return set(map(lambda x: int(x[0]), r))
     else:
         return set()
 
@@ -82,5 +86,8 @@ def bool_query(origin_query_str):
 
 while True:
     query_str = input("bool search expression: ")
-    print("doc ids are: ", bool_query(query_str))
+    result = list(bool_query(query_str))
+    result.sort()
+    result_2d = list(map(lambda x: (x, id_path_dict[str(x)]), result))
+    print("doc ids are: ", result_2d)
 

@@ -123,4 +123,4 @@ for key, value in inverted_indices.items():
     with open("../output/inverted_index_table/" + key + ".csv", "w+", newline="") as fp:
         w = csv.writer(fp)
         for j in value:
-            w.writerow((j, id_path_dict[str(j)]))
+            w.writerow([j])
