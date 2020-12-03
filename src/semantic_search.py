@@ -72,8 +72,8 @@ if __name__ == "__main__":
     id_path_dict = util.get_id_path_map(id_path_map)
 
     cores = 8
-    # core_payload = int(util.docs_num / cores) + 1
-    core_payload = 1000
+    core_payload = int(util.docs_num / cores) + 1
+    # core_payload = 1000
 
     while True:
         query_str = input("Query sentence: ")
