@@ -18,6 +18,8 @@ def write_tokens(path, tokens):
 def preprocess(core_id, low_id, high_id, id_path_dict):
     print("Task%d starts..." % core_id)
     for iter in range(low_id, high_id):
+        if iter >= util.docs_num:
+            break
         if iter % 1000 == 0:
             print(iter)
         doc_id = iter

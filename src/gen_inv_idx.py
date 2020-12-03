@@ -29,6 +29,8 @@ if __name__ == "__main__":
     temp_time = [0, 0, 0, 0]
 
     for iter in range(util.low_id, util.high_id):
+        if iter >= util.docs_num:
+            break
         if iter % 1000 == 0:
             print(iter)
         doc_id = iter
