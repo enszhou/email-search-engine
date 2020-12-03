@@ -27,13 +27,11 @@ def gen_query_vec(query_str):
 
     query_vec = [0] * 1000
     j = 0
-    print(target_tokens_list)
     for token in target_tokens_list:
         if token in str_tokens_tf:
             query_vec[j] = (1 + math.log(str_tokens_tf[token], 10)) * math.log(
                 util.docs_num / target_tokens_df[token], 10
             )
-            print("!!!!!!")
         j += 1
     return query_vec
 
