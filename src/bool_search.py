@@ -57,6 +57,6 @@ if __name__ == "__main__":
         query_str = input("bool search expression: ")
         result = list(bool_query(query_str))
         result.sort()
-        result_2d = list(map(lambda x: (x, id_path_dict[str(x)]), result))
+        result_2d = list(map(lambda x: (x, id_path_dict[x]), result))
         print("doc ids are: ", result_2d)
 

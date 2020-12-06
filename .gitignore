@@ -203,3 +203,4 @@ src/test.ipynb
 output/doc_tokens
 output/id_path_map.csv
 output/doc_wordvec
+maildir
